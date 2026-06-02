@@ -1,0 +1,58 @@
+name: Deploy Azure Infrastructure
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "terraform/**"
+      - "databricks/**"
+  workflow_dispatch:
+
+env:
+  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+  ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+
+  # Databricks provider auth — reuses the same Service Principal as AzureRM
+  TF_VAR_azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
+  TF_VAR_azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
+  TF_VAR_azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
+
+  # Required for ADF Linked Service. Create manually in Databricks UI →
+  # User Settings → Access Tokens → Add to GitHub Secrets as DATABRICKS_TOKEN
+  DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+
+jobs:
+  terraform:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./terraform
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9
+
+      - name: Terraform Fmt Check
+        run: terraform fmt -check -recursive
+        continue-on-error: true
+
+      - name: Terraform Init
+        run: terraform init \
+          -backend-config="storage_account_name=satearthquakeetltfstate" \
+          -backend-config="container_name=tfstate" \
+          -backend-config="key=etl-earthquake-azure.tfstate"
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -var-file=dev.tfvars -out=tfplan
+
+      - name: Terraform Apply
+        run: terraform apply tfplan

@@ -1,0 +1,36 @@
+# ── Terraform ──────────────────────────────────────────────────
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfstate.lock.info
+crash.log
+crash.*.log
+
+# Terraform plans
+tfplan
+*.tfplan
+
+# Variable files (allow .example for documentation)
+*.tfvars
+!terraform.tfvars.example
+!dev.tfvars
+
+# ── Python / Databricks Notebooks ──────────────────────────────
+__pycache__/
+*.pyc
+.venv/
+
+# ── IDE ────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── Docs / Plan (root .md except README) ────────────────────────
+/DEPLOY.md
+/deploy-data.md
+/plan.md
+
+# ── OS ─────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db

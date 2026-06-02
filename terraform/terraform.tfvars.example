@@ -1,0 +1,6 @@
+resource_group_name     = "rg-earthquake-etl-dev"
+storage_account_name    = "sadearthemovitdev"
+data_factory_name       = "adf-earthquake-etl-dev"
+databricks_workspace_name = "dbw-earthquake-etl-dev"
+environment             = "dev"
+location                = "East US"
