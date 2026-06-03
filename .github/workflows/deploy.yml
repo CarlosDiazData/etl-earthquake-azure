@@ -48,10 +48,11 @@ jobs:
         continue-on-error: true
 
       - name: Terraform Init
-        run: terraform init \
-          -backend-config="storage_account_name=satearthquakeetltfstate" \
-          -backend-config="container_name=tfstate" \
-          -backend-config="key=etl-earthquake-azure.tfstate"
+        run: |
+          terraform init \
+            -backend-config="storage_account_name=satearthquakeetltfstate" \
+            -backend-config="container_name=tfstate" \
+            -backend-config="key=etl-earthquake-azure.tfstate"
 
       - name: Terraform Validate
         run: terraform validate
