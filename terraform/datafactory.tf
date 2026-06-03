@@ -38,17 +38,17 @@ resource "azurerm_role_assignment" "adf_to_databricks" {
 # ---------------------------------------------------------------------------
 
 resource "azurerm_data_factory_linked_service_web" "usgs" {
-  name                  = "LS_USGS_HTTP"
-  data_factory_id       = azurerm_data_factory.main.id
-  authentication_type   = "Anonymous"
-  url                   = "https://earthquake.usgs.gov/fdsnws/event/1/"
+  name                = "LS_USGS_HTTP"
+  data_factory_id     = azurerm_data_factory.main.id
+  authentication_type = "Anonymous"
+  url                 = "https://earthquake.usgs.gov/fdsnws/event/1/"
 }
 
 resource "azurerm_data_factory_linked_service_azure_blob_storage" "adls" {
-  name                   = "LS_ADLS_GEN2"
-  data_factory_id        = azurerm_data_factory.main.id
-  use_managed_identity   = true
-  service_endpoint       = azurerm_storage_account.main.primary_blob_endpoint
+  name                 = "LS_ADLS_GEN2"
+  data_factory_id      = azurerm_data_factory.main.id
+  use_managed_identity = true
+  service_endpoint     = azurerm_storage_account.main.primary_blob_endpoint
 }
 
 resource "azurerm_data_factory_linked_service_azure_databricks" "databricks" {
@@ -93,9 +93,9 @@ resource "azurerm_data_factory_pipeline" "master" {
 
   activities_json = jsonencode([
     {
-      name       = "Copy_USGS_To_Bronze"
-      type       = "Copy"
-      dependsOn  = []
+      name      = "Copy_USGS_To_Bronze"
+      type      = "Copy"
+      dependsOn = []
       policy = {
         timeout                = "0:30:00"
         retry                  = 1
@@ -121,8 +121,8 @@ resource "azurerm_data_factory_pipeline" "master" {
       }
     },
     {
-      name       = "Notebook_Bronze_To_Silver"
-      type       = "DatabricksNotebook"
+      name = "Notebook_Bronze_To_Silver"
+      type = "DatabricksNotebook"
       dependsOn = [
         {
           activity             = "Copy_USGS_To_Bronze"
@@ -149,8 +149,8 @@ resource "azurerm_data_factory_pipeline" "master" {
       }
     },
     {
-      name       = "Notebook_Silver_To_Gold"
-      type       = "DatabricksNotebook"
+      name = "Notebook_Silver_To_Gold"
+      type = "DatabricksNotebook"
       dependsOn = [
         {
           activity             = "Notebook_Bronze_To_Silver"
