@@ -24,9 +24,9 @@ env:
   TF_VAR_azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
   TF_VAR_azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
 
-  # Required for ADF Linked Service. Create manually in Databricks UI →
-  # User Settings → Access Tokens → Add to GitHub Secrets as DATABRICKS_TOKEN
-  DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+  # DATABRICKS_TOKEN intentionally NOT set here.
+  # The Databricks provider uses Azure SP auth (configured in terraform/main.tf).
+  # Setting both PAT and SP causes "more than one authorization method configured" error.
 
 jobs:
   terraform:
