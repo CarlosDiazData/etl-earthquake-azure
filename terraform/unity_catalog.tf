@@ -15,27 +15,27 @@ resource "databricks_storage_credential" "main" {
 }
 
 resource "databricks_external_location" "bronze" {
-  name             = "el-earthquake-bronze"
-  url              = "abfss://bronze@${var.storage_account_name}.dfs.core.windows.net/"
-  credential_name  = databricks_storage_credential.main.name
-  skip_validation  = true
-  comment          = "Bronze — datos crudos USGS"
+  name            = "el-earthquake-bronze"
+  url             = "abfss://bronze@${var.storage_account_name}.dfs.core.windows.net/"
+  credential_name = databricks_storage_credential.main.name
+  skip_validation = true
+  comment         = "Bronze — datos crudos USGS"
 }
 
 resource "databricks_external_location" "silver" {
-  name             = "el-earthquake-silver"
-  url              = "abfss://silver@${var.storage_account_name}.dfs.core.windows.net/"
-  credential_name  = databricks_storage_credential.main.name
-  skip_validation  = true
-  comment          = "Silver — Delta limpio y enriquecido"
+  name            = "el-earthquake-silver"
+  url             = "abfss://silver@${var.storage_account_name}.dfs.core.windows.net/"
+  credential_name = databricks_storage_credential.main.name
+  skip_validation = true
+  comment         = "Silver — Delta limpio y enriquecido"
 }
 
 resource "databricks_external_location" "gold" {
-  name             = "el-earthquake-gold"
-  url              = "abfss://gold@${var.storage_account_name}.dfs.core.windows.net/"
-  credential_name  = databricks_storage_credential.main.name
-  skip_validation  = true
-  comment          = "Gold — tablas dimensionales y fact"
+  name            = "el-earthquake-gold"
+  url             = "abfss://gold@${var.storage_account_name}.dfs.core.windows.net/"
+  credential_name = databricks_storage_credential.main.name
+  skip_validation = true
+  comment         = "Gold — tablas dimensionales y fact"
 }
 
 # Grants para que el usuario humano pueda ver y usar los recursos en la UI

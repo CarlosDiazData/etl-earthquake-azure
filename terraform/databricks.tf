@@ -41,11 +41,11 @@ resource "databricks_cluster" "job_cluster" {
   autotermination_minutes = 30
   data_security_mode      = "SINGLE_USER"
   spark_conf = {
-    "spark.databricks.delta.preview.enabled"                                                    = "true"
-    "spark.hadoop.fs.azure.account.auth.type.sadearthemovitdev.dfs.core.windows.net"            = "OAuth"
-    "spark.hadoop.fs.azure.account.oauth.provider.type.sadearthemovitdev.dfs.core.windows.net"  = "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider"
-    "spark.hadoop.fs.azure.account.oauth2.client.id.sadearthemovitdev.dfs.core.windows.net"     = var.azure_client_id
-    "spark.hadoop.fs.azure.account.oauth2.client.secret.sadearthemovitdev.dfs.core.windows.net" = var.azure_client_secret
+    "spark.databricks.delta.preview.enabled"                                                      = "true"
+    "spark.hadoop.fs.azure.account.auth.type.sadearthemovitdev.dfs.core.windows.net"              = "OAuth"
+    "spark.hadoop.fs.azure.account.oauth.provider.type.sadearthemovitdev.dfs.core.windows.net"    = "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider"
+    "spark.hadoop.fs.azure.account.oauth2.client.id.sadearthemovitdev.dfs.core.windows.net"       = var.azure_client_id
+    "spark.hadoop.fs.azure.account.oauth2.client.secret.sadearthemovitdev.dfs.core.windows.net"   = var.azure_client_secret
     "spark.hadoop.fs.azure.account.oauth2.client.endpoint.sadearthemovitdev.dfs.core.windows.net" = "https://login.microsoftonline.com/${var.azure_tenant_id}/oauth2/token"
   }
   custom_tags = var.tags
