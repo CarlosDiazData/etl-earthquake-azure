@@ -98,17 +98,6 @@ terraform plan -var-file="dev.tfvars"
 terraform apply -var-file="dev.tfvars"
 ```
 
-## Configuración post-deploy (ADF Studio)
-
-1. Crear Linked Service a ADLS (Managed Identity)
-2. Crear Linked Service a Databricks (PAT token)
-3. Crear pipeline `PL_MasterPipeline`:
-   - Copy Data (HTTP USGS → ADLS bronze/)
-   - Databricks Notebook (01_bronze_to_silver)
-   - Databricks Notebook (02_silver_to_gold)
-4. Crear Trigger Schedule cada 6h
-5. Conectar Git al repositorio
-
 ## Licencia
 
 MIT
