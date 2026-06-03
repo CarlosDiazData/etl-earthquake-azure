@@ -10,7 +10,7 @@ from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 from datetime import datetime, timedelta
 
-dbutils.widgets.text("adls_account", "")
+dbutils.widgets.text("adls_account", "sadearthemovitdev")
 dbutils.widgets.text("silver_path", "cleansed/")
 dbutils.widgets.text("gold_path", "dimensional/")
 
@@ -27,7 +27,7 @@ spark = SparkSession.builder.getOrCreate()
 print("Reading Silver Delta table...")
 df_silver = spark.read.format("delta").load(SILVER_PATH)
 
-if df_silver.rdd.isEmpty():
+if df_silver.limit(1).count() == 0:
     print("Silver layer is empty. Nothing to process.")
     dbutils.notebook.exit("SUCCESS_NO_DATA")
 

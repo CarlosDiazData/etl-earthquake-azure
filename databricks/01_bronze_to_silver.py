@@ -11,7 +11,7 @@ from pyspark.sql.types import TimestampType, IntegerType, DoubleType, BooleanTyp
 
 # Configuración — ADF pasa estos parámetros
 dbutils.widgets.text("adls_container", "bronze")
-dbutils.widgets.text("adls_account", "")
+dbutils.widgets.text("adls_account", "sadearthemovitdev")
 dbutils.widgets.text("bronze_path", "raw/")
 dbutils.widgets.text("silver_path", "cleansed/")
 
@@ -27,14 +27,29 @@ spark = SparkSession.builder.getOrCreate()
 
 # --- 1. Ingestion & Flattening ---
 print("Reading raw JSON data from Bronze layer...")
-df_bronze_raw = spark.read.json(BRONZE_PATH)
+df_bronze_raw = spark.read.option("multiline", "true").json(BRONZE_PATH)
 
-if df_bronze_raw.rdd.isEmpty():
+print(f"=== BRONZE RAW ===")
+print(f"Count: {df_bronze_raw.count()}")
+print(f"Schema:")
+df_bronze_raw.printSchema()
+print(f"Columns: {df_bronze_raw.columns}")
+print(f"Sample (1 row):")
+df_bronze_raw.show(1, truncate=80)
+
+if df_bronze_raw.limit(1).count() == 0:
     print("Bronze layer is empty. Nothing to process.")
     dbutils.notebook.exit("SUCCESS_NO_DATA")
 
+print(f"=== EXPLODING FEATURES ===")
 df_features = df_bronze_raw.select(F.explode("features").alias("feature"))
+print(f"After explode - count: {df_features.count()}")
+print(f"Schema:")
+df_features.printSchema()
+print(f"Sample (1 feature):")
+df_features.show(1, truncate=80)
 
+print(f"=== FLATTENING ===")
 df_bronze = df_features.select(
     F.col("feature.id").alias("id"),
     F.col("feature.properties.mag").alias("mag"),
@@ -64,8 +79,13 @@ df_bronze = df_features.select(
 )
 
 print(f"Flattened records: {df_bronze.count()}")
+print(f"Flattened schema:")
+df_bronze.printSchema()
+print(f"Sample (3 rows):")
+df_bronze.show(3, truncate=60)
 
 # --- 2. Transformation: casting, validation, dedup ---
+print(f"=== CASTING & CLEANING ===")
 df_cleaned = df_bronze \
     .withColumn("event_timestamp_utc", (F.col("time") / 1000).cast(TimestampType())) \
     .withColumn("updated_timestamp_utc", (F.col("updated") / 1000).cast(TimestampType())) \
@@ -77,6 +97,8 @@ df_cleaned = df_bronze \
     .withColumn("nst_stations", F.col("nst").cast(IntegerType())) \
     .withColumn("rms_travel_time", F.col("rms").cast(DoubleType())) \
     .withColumn("gap_azimuthal", F.col("gap").cast(DoubleType()))
+
+print(f"After cleaning: {df_cleaned.count()} rows")
 
 df_selected = df_cleaned.select(
     F.col("id").alias("event_id"),
@@ -96,14 +118,20 @@ df_validated = df_selected.filter(
     (F.col("event_timestamp_utc").isNotNull()) & (F.col("event_id").isNotNull())
 )
 
+print(f"After validation: {df_validated.count()} rows (filtered out invalid)")
+
 # Dedup: keep most recent update per event_id
+print(f"=== DEDUPLICATING ===")
 window_spec = Window.partitionBy("event_id").orderBy(F.col("updated_timestamp_utc").desc())
 df_deduplicated = df_validated \
     .withColumn("rn", F.row_number().over(window_spec)) \
     .filter(F.col("rn") == 1) \
     .drop("rn")
 
+print(f"After dedup: {df_deduplicated.count()} rows")
+
 # --- 3. Feature Engineering ---
+print(f"=== FEATURE ENGINEERING ===")
 df_enriched = df_deduplicated \
     .withColumn("magnitude_category",
         F.when(F.col("magnitude") < 3.0, "Micro")
