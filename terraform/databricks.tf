@@ -37,6 +37,7 @@ resource "databricks_cluster" "job_cluster" {
   cluster_name            = "earthquake-etl-job-cluster"
   spark_version           = data.databricks_spark_version.latest_lts.id
   node_type_id            = "Standard_DS3_v2"
+  num_workers             = 1
   autotermination_minutes = 30
   data_security_mode      = "SINGLE_USER"
   spark_conf = {
