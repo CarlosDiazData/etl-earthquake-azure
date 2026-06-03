@@ -2,7 +2,12 @@ name: Deploy Azure Infrastructure
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
+    paths:
+      - "terraform/**"
+      - "databricks/**"
+  pull_request:
+    branches: [main, develop]
     paths:
       - "terraform/**"
       - "databricks/**"
@@ -25,7 +30,7 @@ env:
 
 jobs:
   terraform:
-    name: Terraform Apply
+    name: Terraform Plan & Apply
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -55,4 +60,5 @@ jobs:
         run: terraform plan -var-file=dev.tfvars -out=tfplan
 
       - name: Terraform Apply
+        if: github.event_name == 'push'
         run: terraform apply tfplan
