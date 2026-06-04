@@ -38,7 +38,7 @@ resource "azurerm_role_assignment" "adf_to_databricks" {
 # ---------------------------------------------------------------------------
 
 resource "azurerm_data_factory_linked_custom_service" "usgs" {
-  name                 = "LS_USGS_HTTP"
+  name                 = "LS_USGS_HTTP_V2"
   data_factory_id      = azurerm_data_factory.main.id
   type                 = "HttpServer"
   type_properties_json = jsonencode({
