@@ -67,7 +67,7 @@ resource "azurerm_data_factory_dataset_http" "usgs" {
   name                = "DS_USGS_GEOJSON"
   data_factory_id     = azurerm_data_factory.main.id
   linked_service_name = azurerm_data_factory_linked_service_web.usgs.name
-  relative_url        = "query?format=geojson&minmagnitude=4"
+  relative_url        = "query?format=geojson&minmagnitude=2.5&limit=20000&orderby=time"
   request_method      = "GET"
 }
 
