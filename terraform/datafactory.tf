@@ -37,11 +37,14 @@ resource "azurerm_role_assignment" "adf_to_databricks" {
 # Phase 1: Linked Services
 # ---------------------------------------------------------------------------
 
-resource "azurerm_data_factory_linked_service_web" "usgs" {
-  name                = "LS_USGS_HTTP"
-  data_factory_id     = azurerm_data_factory.main.id
-  authentication_type = "Anonymous"
-  url                 = "https://earthquake.usgs.gov/fdsnws/event/1/"
+resource "azurerm_data_factory_linked_custom_service" "usgs" {
+  name                 = "LS_USGS_HTTP"
+  data_factory_id      = azurerm_data_factory.main.id
+  type                 = "HttpServer"
+  type_properties_json = jsonencode({
+    url                = "https://earthquake.usgs.gov/fdsnws/event/1/"
+    authenticationType = "Anonymous"
+  })
 }
 
 resource "azurerm_data_factory_linked_service_azure_blob_storage" "adls" {
@@ -66,7 +69,7 @@ resource "azurerm_data_factory_linked_service_azure_databricks" "databricks" {
 resource "azurerm_data_factory_dataset_http" "usgs" {
   name                = "DS_USGS_GEOJSON"
   data_factory_id     = azurerm_data_factory.main.id
-  linked_service_name = azurerm_data_factory_linked_service_web.usgs.name
+  linked_service_name = azurerm_data_factory_linked_custom_service.usgs.name
   relative_url        = "query?format=geojson&minmagnitude=2.5&limit=20000&orderby=time"
   request_method      = "GET"
 }
