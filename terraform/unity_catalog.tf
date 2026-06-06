@@ -70,3 +70,44 @@ resource "databricks_grants" "external_location_gold" {
     privileges = ["ALL_PRIVILEGES"]
   }
 }
+
+# ────────────────────────────────────────────────────────────────────
+# UC Catalog + Schema for Gold tables
+# ────────────────────────────────────────────────────────────────────
+
+resource "databricks_catalog" "earthquake" {
+  name             = "earthquake_etl"
+  comment          = "Earthquake ETL — managed external tables"
+  storage_root = "abfss://gold@${var.storage_account_name}.dfs.core.windows.net/managed/"
+}
+
+resource "databricks_schema" "gold" {
+  catalog_name = databricks_catalog.earthquake.name
+  name         = "gold"
+  comment      = "Star schema dimensional tables — dim_* and fact_*"
+}
+
+# Grants: el Service Principal necesita permisos para crear/reemplazar tablas
+resource "databricks_grants" "catalog_earthquake" {
+  catalog = databricks_catalog.earthquake.name
+  grant {
+    principal  = data.azurerm_client_config.current.client_id
+    privileges = ["USE_CATALOG", "USE_SCHEMA", "CREATE_SCHEMA"]
+  }
+  grant {
+    principal  = "carlosdiazdata@outlook.com"
+    privileges = ["ALL_PRIVILEGES"]
+  }
+}
+
+resource "databricks_grants" "schema_gold" {
+  schema = "${databricks_catalog.earthquake.name}.${databricks_schema.gold.name}"
+  grant {
+    principal  = data.azurerm_client_config.current.client_id
+    privileges = ["USE_SCHEMA", "CREATE_TABLE", "SELECT", "MODIFY", "EXECUTE"]
+  }
+  grant {
+    principal  = "carlosdiazdata@outlook.com"
+    privileges = ["ALL_PRIVILEGES"]
+  }
+}
