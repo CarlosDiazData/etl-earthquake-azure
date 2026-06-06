@@ -92,7 +92,7 @@ resource "databricks_grants" "catalog_earthquake" {
   catalog = databricks_catalog.earthquake.name
   grant {
     principal  = data.azurerm_client_config.current.client_id
-    privileges = ["USE_CATALOG", "USE_SCHEMA", "CREATE_SCHEMA"]
+    privileges = ["USE_CATALOG", "USE_SCHEMA", "CREATE_SCHEMA", "MANAGE"]
   }
   grant {
     principal  = "carlosdiazdata@outlook.com"
@@ -104,7 +104,7 @@ resource "databricks_grants" "schema_gold" {
   schema = "${databricks_catalog.earthquake.name}.${databricks_schema.gold.name}"
   grant {
     principal  = data.azurerm_client_config.current.client_id
-    privileges = ["USE_SCHEMA", "CREATE_TABLE", "SELECT", "MODIFY", "EXECUTE"]
+    privileges = ["USE_SCHEMA", "CREATE_TABLE", "SELECT", "MODIFY", "EXECUTE", "MANAGE"]
   }
   grant {
     principal  = "carlosdiazdata@outlook.com"

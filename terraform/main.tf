@@ -32,11 +32,10 @@ provider "azurerm" {
 }
 
 provider "databricks" {
-  host                = azurerm_databricks_workspace.main.workspace_url
-  token               = var.databricks_token
-  azure_client_id     = ""
-  azure_client_secret = ""
-  azure_tenant_id     = ""
+  host                = "https://${azurerm_databricks_workspace.main.workspace_url}"
+  azure_client_id     = var.azure_client_id
+  azure_client_secret = var.azure_client_secret
+  azure_tenant_id     = var.azure_tenant_id
 }
 
 data "azurerm_client_config" "current" {}
