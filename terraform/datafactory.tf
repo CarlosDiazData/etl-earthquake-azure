@@ -138,7 +138,7 @@ resource "azurerm_data_factory_pipeline" "master" {
     },
     {
       name = "Job_Bronze_To_Silver"
-      type = "AzureDatabricksJob"
+      type = "DatabricksJob"
       dependsOn = [
         {
           activity             = "Copy_USGS_To_Bronze"
@@ -156,15 +156,15 @@ resource "azurerm_data_factory_pipeline" "master" {
       }
       typeProperties = {
         jobId = databricks_job.bronze_to_silver.id
-        baseParameters = {
-          bronze_path = "raw/"
-          silver_path = "cleansed/"
-        }
+      }
+      jobParameters = {
+        bronze_path = "raw/"
+        silver_path = "cleansed/"
       }
     },
     {
       name = "Job_Silver_To_Gold"
-      type = "AzureDatabricksJob"
+      type = "DatabricksJob"
       dependsOn = [
         {
           activity             = "Job_Bronze_To_Silver"
@@ -182,10 +182,10 @@ resource "azurerm_data_factory_pipeline" "master" {
       }
       typeProperties = {
         jobId = databricks_job.silver_to_gold.id
-        baseParameters = {
-          silver_path = "cleansed/"
-          gold_path   = "dimensional/"
-        }
+      }
+      jobParameters = {
+        silver_path = "cleansed/"
+        gold_path   = "dimensional/"
       }
     }
   ])
