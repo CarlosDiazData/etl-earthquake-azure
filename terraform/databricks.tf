@@ -25,28 +25,52 @@ resource "databricks_notebook" "silver_to_gold" {
   depends_on = [databricks_directory.etl_folder]
 }
 
-data "databricks_node_type" "smallest" {
-  local_disk = true
-}
+# ────────────────────────────────────────────────────────────────────
+# Databricks Jobs (serverless) — replaces classic databricks_cluster
+# ────────────────────────────────────────────────────────────────────
 
-data "databricks_spark_version" "latest_lts" {
-  long_term_support = true
-}
+resource "databricks_job" "bronze_to_silver" {
+  name = "earthquake-bronze-to-silver"
 
-resource "databricks_cluster" "job_cluster" {
-  cluster_name            = "earthquake-etl-job-cluster"
-  spark_version           = data.databricks_spark_version.latest_lts.id
-  node_type_id            = "Standard_DS3_v2"
-  num_workers             = 1
-  autotermination_minutes = 30
-  data_security_mode      = "SINGLE_USER"
-  spark_conf = {
-    "spark.databricks.delta.preview.enabled"                                                      = "true"
-    "spark.hadoop.fs.azure.account.auth.type.sadearthemovitdev.dfs.core.windows.net"              = "OAuth"
-    "spark.hadoop.fs.azure.account.oauth.provider.type.sadearthemovitdev.dfs.core.windows.net"    = "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider"
-    "spark.hadoop.fs.azure.account.oauth2.client.id.sadearthemovitdev.dfs.core.windows.net"       = var.azure_client_id
-    "spark.hadoop.fs.azure.account.oauth2.client.secret.sadearthemovitdev.dfs.core.windows.net"   = var.azure_client_secret
-    "spark.hadoop.fs.azure.account.oauth2.client.endpoint.sadearthemovitdev.dfs.core.windows.net" = "https://login.microsoftonline.com/${var.azure_tenant_id}/oauth2/token"
+  notebook_task {
+    notebook_path = databricks_notebook.bronze_to_silver.path
+    base_parameters = {
+      silver_path = "cleansed/"
+    }
   }
-  custom_tags = var.tags
+
+  environment {
+    spec {
+      client = "1"
+      dependencies = []
+    }
+  }
+
+  max_concurrent_runs = 1
+  performance_target  = "PERFORMANCE_OPTIMIZED"
+
+  depends_on = [databricks_notebook.bronze_to_silver]
+}
+
+resource "databricks_job" "silver_to_gold" {
+  name = "earthquake-silver-to-gold"
+
+  notebook_task {
+    notebook_path = databricks_notebook.silver_to_gold.path
+    base_parameters = {
+      gold_path = "dimensional/"
+    }
+  }
+
+  environment {
+    spec {
+      client = "1"
+      dependencies = []
+    }
+  }
+
+  max_concurrent_runs = 1
+  performance_target  = "PERFORMANCE_OPTIMIZED"
+
+  depends_on = [databricks_notebook.silver_to_gold]
 }
