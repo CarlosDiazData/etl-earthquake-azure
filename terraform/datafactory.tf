@@ -38,9 +38,9 @@ resource "azurerm_role_assignment" "adf_to_databricks" {
 # ---------------------------------------------------------------------------
 
 resource "azurerm_data_factory_linked_custom_service" "usgs" {
-  name                 = "LS_USGS_HTTP"
-  data_factory_id      = azurerm_data_factory.main.id
-  type                 = "HttpServer"
+  name            = "LS_USGS_HTTP"
+  data_factory_id = azurerm_data_factory.main.id
+  type            = "HttpServer"
   type_properties_json = jsonencode({
     url                = "https://earthquake.usgs.gov/fdsnws/event/1/"
     authenticationType = "Anonymous"
@@ -55,11 +55,10 @@ resource "azurerm_data_factory_linked_service_azure_blob_storage" "adls" {
 }
 
 resource "azurerm_data_factory_linked_service_azure_databricks" "databricks" {
-  name                = "LS_DATABRICKS"
-  data_factory_id     = azurerm_data_factory.main.id
-  msi_workspace_id    = azurerm_databricks_workspace.main.id
-  adb_domain          = azurerm_databricks_workspace.main.workspace_url
-  existing_cluster_id = databricks_cluster.job_cluster.id
+  name             = "LS_DATABRICKS"
+  data_factory_id  = azurerm_data_factory.main.id
+  msi_workspace_id = azurerm_databricks_workspace.main.id
+  adb_domain       = azurerm_databricks_workspace.main.workspace_url
 }
 
 # ---------------------------------------------------------------------------
@@ -74,8 +73,8 @@ resource "azurerm_data_factory_dataset_http" "usgs" {
   request_method      = "GET"
 }
 
-resource "azurerm_data_factory_dataset_json" "bronze" {
-  name                = "DS_ADLS_BRONZE_JSON"
+resource "azurerm_data_factory_dataset_binary" "bronze" {
+  name                = "DS_ADLS_BRONZE_BINARY"
   data_factory_id     = azurerm_data_factory.main.id
   linked_service_name = azurerm_data_factory_linked_service_azure_blob_storage.adls.name
 
@@ -112,15 +111,20 @@ resource "azurerm_data_factory_pipeline" "master" {
       ]
       outputs = [
         {
-          referenceName = "DS_ADLS_BRONZE_JSON"
+          referenceName = "DS_ADLS_BRONZE_BINARY"
           type          = "DatasetReference"
         }
       ]
-      source = {
-        type = "HttpSource"
-      }
-      sink = {
-        type = "JsonSink"
+      typeProperties = {
+        source = {
+          type = "HttpSource"
+        }
+        sink = {
+          type = "BinarySink"
+          storeSettings = {
+            type = "AzureBlobFSWriteSettings"
+          }
+        }
       }
     },
     {
@@ -137,6 +141,10 @@ resource "azurerm_data_factory_pipeline" "master" {
         retry                  = 1
         retryIntervalInSeconds = 30
       }
+      linkedServiceName = {
+        referenceName = "LS_DATABRICKS"
+        type          = "LinkedServiceReference"
+      }
       typeProperties = {
         notebookPath = "/Shared/earthquake-etl/01_bronze_to_silver"
         baseParameters = {
@@ -144,10 +152,6 @@ resource "azurerm_data_factory_pipeline" "master" {
           adls_account   = var.storage_account_name
           bronze_path    = "raw/"
           silver_path    = "cleansed/"
-        }
-        linkedServiceName = {
-          referenceName = "LS_DATABRICKS"
-          type          = "LinkedServiceReference"
         }
       }
     },
@@ -165,6 +169,10 @@ resource "azurerm_data_factory_pipeline" "master" {
         retry                  = 1
         retryIntervalInSeconds = 30
       }
+      linkedServiceName = {
+        referenceName = "LS_DATABRICKS"
+        type          = "LinkedServiceReference"
+      }
       typeProperties = {
         notebookPath = "/Shared/earthquake-etl/02_silver_to_gold"
         baseParameters = {
@@ -172,17 +180,13 @@ resource "azurerm_data_factory_pipeline" "master" {
           silver_path  = "cleansed/"
           gold_path    = "dimensional/"
         }
-        linkedServiceName = {
-          referenceName = "LS_DATABRICKS"
-          type          = "LinkedServiceReference"
-        }
       }
     }
   ])
 
   depends_on = [
     azurerm_data_factory_dataset_http.usgs,
-    azurerm_data_factory_dataset_json.bronze,
+    azurerm_data_factory_dataset_binary.bronze,
     azurerm_data_factory_linked_service_azure_databricks.databricks,
   ]
 }
