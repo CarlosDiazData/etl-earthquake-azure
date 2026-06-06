@@ -138,8 +138,9 @@ def write_to_gold(df, table_name):
 
     df.createOrReplaceTempView("__tmp_write")
 
+    spark.sql(f"DROP TABLE IF EXISTS {full_name}")
     spark.sql(f"""
-        CREATE OR REPLACE TABLE {full_name}
+        CREATE TABLE {full_name}
         USING parquet
         LOCATION '{path}'
         AS SELECT * FROM __tmp_write
