@@ -10,13 +10,15 @@ from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 from datetime import datetime, timedelta
 
-dbutils.widgets.text("adls_account", "sadearthemovitdev")
+# Configuración — ADF pasa *path como parámetros; storage account hardcodeado
+# para serverless con Unity Catalog MI (sin OAuth en Spark conf).
+STORAGE_ACCOUNT = "sadearthemovitdev"
+
 dbutils.widgets.text("silver_path", "cleansed/")
 dbutils.widgets.text("gold_path", "dimensional/")
 
-ADLS_ACCOUNT = dbutils.widgets.get("adls_account")
-SILVER_PATH = f"abfss://silver@{ADLS_ACCOUNT}.dfs.core.windows.net/{dbutils.widgets.get('silver_path')}"
-GOLD_PATH_BASE = f"abfss://gold@{ADLS_ACCOUNT}.dfs.core.windows.net/{dbutils.widgets.get('gold_path')}"
+SILVER_PATH = f"abfss://silver@{STORAGE_ACCOUNT}.dfs.core.windows.net/{dbutils.widgets.get('silver_path')}"
+GOLD_PATH_BASE = f"abfss://gold@{STORAGE_ACCOUNT}.dfs.core.windows.net/{dbutils.widgets.get('gold_path')}"
 
 print(f"Silver path: {SILVER_PATH}")
 print(f"Gold path: {GOLD_PATH_BASE}")

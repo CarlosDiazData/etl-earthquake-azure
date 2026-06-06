@@ -9,16 +9,15 @@ from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 from pyspark.sql.types import TimestampType, IntegerType, DoubleType, BooleanType
 
-# Configuración — ADF pasa estos parámetros
-dbutils.widgets.text("adls_container", "bronze")
-dbutils.widgets.text("adls_account", "sadearthemovitdev")
+# Configuración — ADF pasa *path como parámetros; storage account hardcodeado
+# para serverless con Unity Catalog MI (sin OAuth en Spark conf).
+STORAGE_ACCOUNT = "sadearthemovitdev"
+
 dbutils.widgets.text("bronze_path", "raw/")
 dbutils.widgets.text("silver_path", "cleansed/")
 
-ADLS_ACCOUNT = dbutils.widgets.get("adls_account")
-ADLS_CONTAINER = dbutils.widgets.get("adls_container")
-BRONZE_PATH = f"abfss://{ADLS_CONTAINER}@{ADLS_ACCOUNT}.dfs.core.windows.net/{dbutils.widgets.get('bronze_path')}"
-SILVER_PATH = f"abfss://silver@{ADLS_ACCOUNT}.dfs.core.windows.net/{dbutils.widgets.get('silver_path')}"
+BRONZE_PATH = f"abfss://bronze@{STORAGE_ACCOUNT}.dfs.core.windows.net/{dbutils.widgets.get('bronze_path')}"
+SILVER_PATH = f"abfss://silver@{STORAGE_ACCOUNT}.dfs.core.windows.net/{dbutils.widgets.get('silver_path')}"
 
 print(f"Bronze path: {BRONZE_PATH}")
 print(f"Silver path: {SILVER_PATH}")
