@@ -133,18 +133,11 @@ print(f"fact_earthquake_events: {df_fact_final.count()} rows")
 # --- 7. Write all tables to Gold ---
 def write_to_gold(df, table_name):
     path = f"{GOLD_PATH_BASE}{table_name}/"
-    full_name = f"earthquake_etl.gold.{table_name}"
-    print(f"Writing {full_name} to {path}")
-
-    df.createOrReplaceTempView("__tmp_write")
-
-    spark.sql(f"DROP TABLE IF EXISTS {full_name}")
-    spark.sql(f"""
-        CREATE TABLE {full_name}
-        USING parquet
-        LOCATION '{path}'
-        AS SELECT * FROM __tmp_write
-    """)
+    print(f"Writing {table_name} to {path}")
+    df.write \
+        .format("parquet") \
+        .mode("overwrite") \
+        .save(path)
 
 write_to_gold(df_dim_date, "dim_date")
 write_to_gold(df_dim_location, "dim_location")
