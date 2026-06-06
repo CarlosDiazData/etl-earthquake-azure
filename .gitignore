@@ -26,6 +26,9 @@ __pycache__/
 *.swp
 *.swo
 
+# ── SDD / Skills registry ──────────────────────────────────────
+.atl/
+
 # ── Docs / Plan (root .md except README) ────────────────────────
 /DEPLOY.md
 /deploy-data.md

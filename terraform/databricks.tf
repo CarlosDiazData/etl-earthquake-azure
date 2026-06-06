@@ -32,10 +32,14 @@ resource "databricks_notebook" "silver_to_gold" {
 resource "databricks_job" "bronze_to_silver" {
   name = "earthquake-bronze-to-silver"
 
-  notebook_task {
-    notebook_path = databricks_notebook.bronze_to_silver.path
-    base_parameters = {
-      silver_path = "cleansed/"
+  task {
+    task_key = "cleanse_earthquake_data"
+
+    notebook_task {
+      notebook_path = databricks_notebook.bronze_to_silver.path
+      base_parameters = {
+        silver_path = "cleansed/"
+      }
     }
   }
 
@@ -56,10 +60,14 @@ resource "databricks_job" "bronze_to_silver" {
 resource "databricks_job" "silver_to_gold" {
   name = "earthquake-silver-to-gold"
 
-  notebook_task {
-    notebook_path = databricks_notebook.silver_to_gold.path
-    base_parameters = {
-      gold_path = "dimensional/"
+  task {
+    task_key = "build_star_schema"
+
+    notebook_task {
+      notebook_path = databricks_notebook.silver_to_gold.path
+      base_parameters = {
+        gold_path = "dimensional/"
+      }
     }
   }
 
