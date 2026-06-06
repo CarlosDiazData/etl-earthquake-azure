@@ -66,7 +66,7 @@ resource "databricks_job" "silver_to_gold" {
     notebook_task {
       notebook_path = databricks_notebook.silver_to_gold.path
       base_parameters = {
-        gold_path = "dimensional/v2/"
+        gold_path = "dimensional/"
       }
     }
   }

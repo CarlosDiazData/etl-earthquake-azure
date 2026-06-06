@@ -25,6 +25,9 @@ print(f"Gold path: {GOLD_PATH_BASE}")
 
 spark = SparkSession.builder.getOrCreate()
 
+# Permitir CTAS en directorios con datos del run anterior
+spark.conf.set("spark.sql.legacy.allowNonEmptyLocationInCTAS", "true")
+
 # --- 1. Read Silver ---
 print("Reading Silver Delta table...")
 df_silver = spark.read.format("delta").load(SILVER_PATH)
