@@ -128,8 +128,8 @@ resource "azurerm_data_factory_pipeline" "master" {
       }
     },
     {
-      name = "Notebook_Bronze_To_Silver"
-      type = "DatabricksNotebook"
+      name = "Job_Bronze_To_Silver"
+      type = "AzureDatabricksJob"
       dependsOn = [
         {
           activity             = "Copy_USGS_To_Bronze"
@@ -146,21 +146,19 @@ resource "azurerm_data_factory_pipeline" "master" {
         type          = "LinkedServiceReference"
       }
       typeProperties = {
-        notebookPath = "/Shared/earthquake-etl/01_bronze_to_silver"
+        jobId = databricks_job.bronze_to_silver.id
         baseParameters = {
-          adls_container = "bronze"
-          adls_account   = var.storage_account_name
-          bronze_path    = "raw/"
-          silver_path    = "cleansed/"
+          bronze_path = "raw/"
+          silver_path = "cleansed/"
         }
       }
     },
     {
-      name = "Notebook_Silver_To_Gold"
-      type = "DatabricksNotebook"
+      name = "Job_Silver_To_Gold"
+      type = "AzureDatabricksJob"
       dependsOn = [
         {
-          activity             = "Notebook_Bronze_To_Silver"
+          activity             = "Job_Bronze_To_Silver"
           dependencyConditions = ["Succeeded"]
         }
       ]
@@ -174,11 +172,10 @@ resource "azurerm_data_factory_pipeline" "master" {
         type          = "LinkedServiceReference"
       }
       typeProperties = {
-        notebookPath = "/Shared/earthquake-etl/02_silver_to_gold"
+        jobId = databricks_job.silver_to_gold.id
         baseParameters = {
-          adls_account = var.storage_account_name
-          silver_path  = "cleansed/"
-          gold_path    = "dimensional/"
+          silver_path = "cleansed/"
+          gold_path   = "dimensional/"
         }
       }
     }
@@ -188,6 +185,8 @@ resource "azurerm_data_factory_pipeline" "master" {
     azurerm_data_factory_dataset_http.usgs,
     azurerm_data_factory_dataset_binary.bronze,
     azurerm_data_factory_linked_service_azure_databricks.databricks,
+    databricks_job.bronze_to_silver,
+    databricks_job.silver_to_gold,
   ]
 }
 
