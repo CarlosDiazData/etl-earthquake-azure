@@ -59,6 +59,15 @@ resource "azurerm_data_factory_linked_service_azure_databricks" "databricks" {
   data_factory_id  = azurerm_data_factory.main.id
   msi_workspace_id = azurerm_databricks_workspace.main.id
   adb_domain       = azurerm_databricks_workspace.main.workspace_url
+
+  # Mínima configuración requerida por el provider; AzureDatabricksJob
+  # activities resuelven el compute a nivel de job (serverless).
+  new_cluster_config {
+    node_type             = "Standard_DS3_v2"
+    cluster_version       = "13.3.x-scala2.12"
+    min_number_of_workers = 1
+    max_number_of_workers = 1
+  }
 }
 
 # ---------------------------------------------------------------------------

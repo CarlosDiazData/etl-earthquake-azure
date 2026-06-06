@@ -40,8 +40,9 @@ resource "databricks_job" "bronze_to_silver" {
   }
 
   environment {
+    environment_key = "shared"
     spec {
-      client = "1"
+      client       = "1"
       dependencies = []
     }
   }
@@ -63,8 +64,9 @@ resource "databricks_job" "silver_to_gold" {
   }
 
   environment {
+    environment_key = "shared"
     spec {
-      client = "1"
+      client       = "1"
       dependencies = []
     }
   }
