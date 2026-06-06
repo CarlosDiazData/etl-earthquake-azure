@@ -25,9 +25,6 @@ print(f"Gold path: {GOLD_PATH_BASE}")
 
 spark = SparkSession.builder.getOrCreate()
 
-# Permitir CTAS en directorios con datos del run anterior
-spark.conf.set("spark.sql.legacy.allowNonEmptyLocationInCTAS", "true")
-
 # --- 1. Read Silver ---
 print("Reading Silver Delta table...")
 df_silver = spark.read.format("delta").load(SILVER_PATH)
@@ -139,14 +136,14 @@ def write_to_gold(df, table_name):
     full_name = f"earthquake_etl.gold.{table_name}"
     print(f"Writing {full_name} to {path}")
 
-    df.createOrReplaceTempView("__tmp_write")
+    # Paso 1: escribir Parquet a ADLS
+    df.write.format("parquet").mode("overwrite").save(path)
 
-    spark.sql(f"DROP TABLE IF EXISTS {full_name}")
+    # Paso 2: registrar tabla externa en UC (si no existe)
     spark.sql(f"""
-        CREATE TABLE {full_name}
+        CREATE TABLE IF NOT EXISTS {full_name}
         USING parquet
         LOCATION '{path}'
-        AS SELECT * FROM __tmp_write
     """)
 
 write_to_gold(df_dim_date, "dim_date")
