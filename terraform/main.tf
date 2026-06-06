@@ -20,6 +20,10 @@ terraform {
 }
 
 provider "azurerm" {
+  subscription_id = var.azure_subscription_id
+  client_id       = var.azure_client_id
+  client_secret   = var.azure_client_secret
+  tenant_id       = var.azure_tenant_id
   features {
     key_vault {
       purge_soft_delete_on_destroy = true
@@ -28,12 +32,11 @@ provider "azurerm" {
 }
 
 provider "databricks" {
-  host = azurerm_databricks_workspace.main.workspace_url
-
-  azure_client_id             = var.azure_client_id
-  azure_client_secret         = var.azure_client_secret
-  azure_tenant_id             = var.azure_tenant_id
-  azure_workspace_resource_id = azurerm_databricks_workspace.main.id
+  host               = azurerm_databricks_workspace.main.workspace_url
+  token              = var.databricks_token
+  azure_client_id    = ""
+  azure_client_secret = ""
+  azure_tenant_id    = ""
 }
 
 data "azurerm_client_config" "current" {}

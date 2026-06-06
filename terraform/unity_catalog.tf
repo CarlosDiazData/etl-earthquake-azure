@@ -76,8 +76,8 @@ resource "databricks_grants" "external_location_gold" {
 # ────────────────────────────────────────────────────────────────────
 
 resource "databricks_catalog" "earthquake" {
-  name             = "earthquake_etl"
-  comment          = "Earthquake ETL — managed external tables"
+  name         = "earthquake_etl"
+  comment      = "Earthquake ETL — managed external tables"
   storage_root = "abfss://gold@${var.storage_account_name}.dfs.core.windows.net/managed/"
 }
 

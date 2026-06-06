@@ -63,3 +63,16 @@ variable "azure_tenant_id" {
   type        = string
   sensitive   = true
 }
+
+variable "azure_subscription_id" {
+  description = "Azure Subscription ID (must match ARM_SUBSCRIPTION_ID GitHub Secret)"
+  type        = string
+  sensitive   = true
+}
+
+variable "databricks_token" {
+  description = "Databricks PAT token for provider auth (fallback when Azure SP lacks workspace perms)"
+  type        = string
+  sensitive   = true
+  default     = null
+}
