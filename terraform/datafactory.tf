@@ -58,10 +58,10 @@ resource "azurerm_data_factory_linked_service_azure_databricks" "databricks" {
   name             = "LS_DATABRICKS"
   data_factory_id  = azurerm_data_factory.main.id
   msi_workspace_id = azurerm_databricks_workspace.main.id
-  adb_domain       = azurerm_databricks_workspace.main.workspace_url
+  adb_domain       = "https://adb-7405606254634054.14.azuredatabricks.net"
 
-  # Mínima configuración requerida por el provider; AzureDatabricksJob
-  # activities resuelven el compute a nivel de job (serverless).
+  # Requerido por el provider (no hay opción "serverless" en azurerm v4).
+  # El compute real lo maneja DatabricksJob activity vía jobId.
   new_cluster_config {
     node_type             = "Standard_DS3_v2"
     cluster_version       = "13.3.x-scala2.12"
